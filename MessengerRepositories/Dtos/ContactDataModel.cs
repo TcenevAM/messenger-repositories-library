@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MessengerRepositories.Models
+namespace MessengerRepositories.Dtos
 {
     public class ContactDataModel
     {
