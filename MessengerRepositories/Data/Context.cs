@@ -5,9 +5,9 @@ namespace MessengerRepositories.Data
 {
     public class Context : DbContext
     {
-        public DbSet<User> UserDataModels { get; set; }
-        public DbSet<Message> MessageDataModels { get; set; }
-        public DbSet<Chat> ContactDataModels { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Chat> Chats { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
