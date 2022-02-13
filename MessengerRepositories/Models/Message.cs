@@ -8,5 +8,6 @@ namespace MessengerRepositories.Models
         public DateTime SendDateTime { get; set; }
         public DateTime DeliveryDateTime { get; set; }
         public string Content { get; set; }
+        public User Sender { get; set; }
     }
 }
