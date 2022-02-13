@@ -10,24 +10,23 @@ namespace MessengerRepositories.Helpers
 {
     public class ContactHelper
     {
-        private Context _context;
-        
-        public async Task<DateTime> GetChatLastConversationDate(int userId, int contactId)
+        public async Task<Chat?> GetChatByUsersIds(int userId, int contactId, Context context)
         {
-            await using (_context = new Context())
+            var chats = context.Chats.Include(c => c.Members).AsQueryable();
+            foreach (var chat in chats)
             {
-                var chat = await _context.Chats.FirstOrDefaultAsync(c =>
-                    c.Members.Exists(m => m.Id == userId) && c.Members.Exists(m => m.Id == contactId));
-                return chat.LastUpdateTime;
+                if (chat.Members.Any(m => m.Id == userId) && chat.Members.Any(m => m.Id == contactId))
+                    return chat;
             }
+
+            return null;
         }
 
-        public async Task UpdateLastUpdateTime(int userId, int contactId, DateTime update)
+        public async Task UpdateLastUpdateTime(int userId, int contactId, DateTime update, Context context)
         {
-            await using (_context = new Context())
+            await using (context = new Context())
             {
-                var chat = await _context.Chats.FirstOrDefaultAsync(c =>
-                    c.Members.Exists(m => m.Id == userId) && c.Members.Exists(m => m.Id == contactId));
+                var chat = await GetChatByUsersIds(userId, contactId, context);
                 chat.LastUpdateTime = update;
             }
         }
@@ -35,6 +34,7 @@ namespace MessengerRepositories.Helpers
         public void CreateContact(User user1, User user2, DateTime lastUpdateTime)
         {
             user1.Contacts.Add(user2);
+            user2.Contacts.Add(user1);
             user1.Chats.Add(new Chat { Members = new List<User> {user1, user2}, LastUpdateTime = lastUpdateTime});
         }
     }

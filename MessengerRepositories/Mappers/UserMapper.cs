@@ -9,7 +9,7 @@ namespace MessengerRepositories.Mappers
     {
         public static IEnumerable<UserDataModel?> MapUsersToDtos(IEnumerable<User> users)
         {
-            return users.Select(MapUserToDto);
+            return users.Select(MapUserToDto).ToList();
         }
         
         public static UserDataModel? MapUserToDto(User? user)

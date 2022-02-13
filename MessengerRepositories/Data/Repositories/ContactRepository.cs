@@ -17,8 +17,8 @@ namespace MessengerRepositories.Data.Repositories
         {
             await using (_context = new Context())
             {
-                var lastUpdateTime = await _contactHelper.GetChatLastConversationDate(userId, contactId);
-                return ContactMapper.MapEntityToDto(userId, contactId, lastUpdateTime);
+                var chat = await _contactHelper.GetChatByUsersIds(userId, contactId, _context);
+                return ContactMapper.MapEntityToDto(userId, contactId, chat.LastUpdateTime);
             }
         }
 
@@ -32,8 +32,8 @@ namespace MessengerRepositories.Data.Repositories
                 
                 foreach (var contact in user.Contacts.Where(c => c.Id != userId))
                 {
-                    var lastUpdateTime = await _contactHelper.GetChatLastConversationDate(userId, contact.Id);
-                    result.Add(ContactMapper.MapEntityToDto(userId, contact.Id, lastUpdateTime));
+                    var chat = await _contactHelper.GetChatByUsersIds(userId, contact.Id, _context);
+                    result.Add(ContactMapper.MapEntityToDto(userId, contact.Id, chat.LastUpdateTime));
                 }
                 return result;
             }
@@ -43,12 +43,12 @@ namespace MessengerRepositories.Data.Repositories
         {
             await using (_context = new Context())
             {
-                var user = await _context.Users.FindAsync(userId);
+                var user = await _context.Users.Include(u => u.Contacts).FirstOrDefaultAsync(u => u.Id == userId);
                 var target = user.Contacts.FirstOrDefault(c => c.Name.ToLower().Contains(query.ToLower()));
                 if (target == null || user == null) return null;
                 
-                var lastUpdateTime = await _contactHelper.GetChatLastConversationDate(userId, target.Id);
-                return ContactMapper.MapEntityToDto(userId, target.Id, lastUpdateTime);
+                var chat = await _contactHelper.GetChatByUsersIds(userId, target.Id, _context);
+                return ContactMapper.MapEntityToDto(userId, target.Id, chat.LastUpdateTime);
             }
         }
 
@@ -59,6 +59,7 @@ namespace MessengerRepositories.Data.Repositories
                 var user = await _context.Users.FindAsync(dto.UserId);
                 var contact = await _context.Users.FindAsync(dto.ContactId);
                 _contactHelper.CreateContact(user, contact, dto.LastUpdateTime);
+                await _context.Chats.AddAsync(user.Chats.Last());
                 await _context.SaveChangesAsync();
             }
         }
@@ -67,7 +68,7 @@ namespace MessengerRepositories.Data.Repositories
         {
             await using (_context = new Context())
             {
-                await _contactHelper.UpdateLastUpdateTime(dto.UserId, dto.ContactId, dto.LastUpdateTime);
+                await _contactHelper.UpdateLastUpdateTime(dto.UserId, dto.ContactId, dto.LastUpdateTime, _context);
                 await _context.SaveChangesAsync();
             }
         }

@@ -6,6 +6,6 @@ namespace MessengerRepositories.Dtos
     {
         public int UserId { get; set; }
         public int ContactId { get; set; }
-        public DateTime LastUpdateTime { get; set; }
+        public DateTime LastUpdateTime { get; set; } = DateTime.UtcNow;
     }
 }
